@@ -1,0 +1,25 @@
+---
+- name: play for testing async
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: sample command
+      command: sleep 40
+      async: 60
+      poll: 0
+      register: status
+    - name: touching file
+      file:
+         path: /testfile
+         state: touch 
+    - name: checking status of job
+      async_status: 
+          jid: '{{ status.ansible_job_id }}'
+      register: result
+      until: result.finished
+      retries: 10
+
+    - debug: 
+         msg: job finished
+      when: result.finished
+    
